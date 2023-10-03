@@ -16,7 +16,7 @@ var Book = assets.AssetType{
 			Tag:      "title",
 			Label:    "Book Title",
 			DataType: "string",
-			Writers:  []string{`org2MSP`, "orgMSP"}, // This means only org2 can create the asset (others can edit)
+			Writers:  []string{"orgMSP"}, // This means only org2 can create the asset (others can edit)
 		},
 		{
 			// Composite Key
