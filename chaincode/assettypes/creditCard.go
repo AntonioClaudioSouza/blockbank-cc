@@ -27,9 +27,10 @@ var CreditCard = assets.AssetType{
 			DataType: "number",
 		},
 		{
-			Tag:      "limitUsed",
-			Label:    "Credit Card Used Limit",
-			DataType: "number",
+			Tag:          "limitUsed",
+			Label:        "Credit Card Used Limit",
+			DataType:     "number",
+			DefaultValue: 0,
 		},
 	},
 }

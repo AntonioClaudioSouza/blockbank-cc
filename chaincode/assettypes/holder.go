@@ -36,10 +36,5 @@ var Holder = assets.AssetType{
 			DataType:     "boolean",
 			DefaultValue: false,
 		},
-		{
-			Tag:      "creditCard",
-			Label:    "Credit Card",
-			DataType: "->creditCard",
-		},
 	},
 }
