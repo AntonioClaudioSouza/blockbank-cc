@@ -25,14 +25,16 @@ var Holder = assets.AssetType{
 			Writers:  []string{"orgMSP"},
 		},
 		{
-			Tag:      "cash",
-			Label:    "Cash",
-			DataType: "number",
+			Tag:          "cash",
+			Label:        "Cash",
+			DataType:     "number",
+			DefaultValue: 0,
 		},
 		{
-			Tag:      "ccAvailable",
-			Label:    "Credit Card Available",
-			DataType: "boolean",
+			Tag:          "ccAvailable",
+			Label:        "Credit Card Available",
+			DataType:     "boolean",
+			DefaultValue: false,
 		},
 		{
 			Tag:      "creditCard",
