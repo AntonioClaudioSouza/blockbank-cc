@@ -1,6 +1,11 @@
 package assettypes
 
-import "github.com/hyperledger-labs/cc-tools/assets"
+import (
+	"fmt"
+	"strconv"
+
+	"github.com/hyperledger-labs/cc-tools/assets"
+)
 
 var CreditCard = assets.AssetType{
 	Tag:         "creditCard",
@@ -15,6 +20,17 @@ var CreditCard = assets.AssetType{
 			Label:    "Credit Card Number",
 			DataType: "string",
 			Writers:  []string{"orgMSP"},
+			Validate: func(number interface{}) error {
+				numberSrt := number.(string)
+				_, err := strconv.Atoi(numberSrt)
+				if err != nil {
+					return fmt.Errorf("Credit card number must contain only numbers")
+				}
+				if len(numberSrt) != 16 {
+					return fmt.Errorf("Credit card number must have 16 digits")
+				}
+				return nil
+			},
 		},
 		{
 			Tag:      "owner",
@@ -22,9 +38,10 @@ var CreditCard = assets.AssetType{
 			DataType: "->holder",
 		},
 		{
-			Tag:      "limit",
-			Label:    "Credit Card Limit",
-			DataType: "number",
+			Tag:          "limit",
+			Label:        "Credit Card Limit",
+			DataType:     "number",
+			DefaultValue: 100,
 		},
 		{
 			Tag:          "limitUsed",
