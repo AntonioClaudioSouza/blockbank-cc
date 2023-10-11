@@ -4,19 +4,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
-	"strconv"
 
 	"github.com/hyperledger-labs/cc-tools/assets"
 	"github.com/hyperledger-labs/cc-tools/errors"
+	"google.golang.org/protobuf/types/known/timestamppb"
 
 	// "github.com/hyperledger-labs/cc-tools/events"
 	sw "github.com/hyperledger-labs/cc-tools/stubwrapper"
 	tx "github.com/hyperledger-labs/cc-tools/transactions"
 )
 
-func generateValidCreditCardNumber(timestamp string) string {
-	intNumber, _ := strconv.ParseInt(timestamp, 64, 64)
-	rand.Seed(intNumber)
+func generateValidCreditCardNumber(timestamp *timestamppb.Timestamp) string {
+	rand.Seed(timestamp.Seconds)
 	prefix := "4"
 
 	var numberDigits []int
@@ -41,7 +40,6 @@ func generateValidCreditCardNumber(timestamp string) string {
 
 	numberDigits = append(numberDigits, checksum)
 	cardNumber := prefix + digitsToString(numberDigits)
-	fmt.Println(cardNumber)
 	return cardNumber
 }
 
@@ -72,12 +70,28 @@ var CreateNewCreditCard = tx.Transaction{
 	},
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
 		timeStamp, _ := stub.Stub.GetTxTimestamp()
-		number := generateValidCreditCardNumber(timeStamp.String())
+		number := generateValidCreditCardNumber(timeStamp)
 
 		ownerKey, ok := req["owner"].(assets.Key)
-
 		if !ok {
 			return nil, errors.WrapError(nil, "Parameter owner must be an asset")
+		}
+
+		// Prepare couchdb query
+		query := map[string]interface{}{
+			"selector": map[string]interface{}{
+				"@assetType": "creditCard",
+				"owner":      ownerKey,
+			},
+		}
+
+		var err error
+		response, err := assets.Search(stub, query, "", true)
+		if err != nil {
+			return nil, errors.WrapErrorWithStatus(err, "error searching for credit card", 500)
+		}
+		if len(response.Result) >= 1 {
+			return nil, errors.WrapErrorWithStatus(err, "Holder already have a credit card", 500)
 		}
 
 		ownerAsset, err := ownerKey.Get(stub)
