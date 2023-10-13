@@ -33,6 +33,11 @@ var CreditCard = assets.AssetType{
 			},
 		},
 		{
+			Tag:      "creditCardName",
+			Label:    "Credit Card Name",
+			DataType: "string",
+		},
+		{
 			Tag:      "owner",
 			Label:    "Credit Card Owner",
 			DataType: "->holder",

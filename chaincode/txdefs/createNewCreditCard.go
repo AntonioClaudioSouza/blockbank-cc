@@ -67,10 +67,19 @@ var CreateNewCreditCard = tx.Transaction{
 			DataType:    "->holder",
 			Required:    true,
 		},
+		{
+			Tag:         "creditCardName",
+			Label:       "Credit card name",
+			Description: "Credit card name",
+			DataType:    "string",
+			Required:    true,
+		},
 	},
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
 		timeStamp, _ := stub.Stub.GetTxTimestamp()
 		number := generateValidCreditCardNumber(timeStamp)
+
+		creditCardName := req["creditCardName"].(string)
 
 		ownerKey, ok := req["owner"].(assets.Key)
 		if !ok {
@@ -108,6 +117,7 @@ var CreateNewCreditCard = tx.Transaction{
 		ccMap["@assetType"] = "creditCard"
 		ccMap["number"] = number
 		ccMap["owner"] = ownerMap
+		ccMap["creditCardName"] = creditCardName
 
 		ccAsset, err := assets.NewAsset(ccMap)
 		if err != nil {
