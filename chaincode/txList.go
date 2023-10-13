@@ -13,4 +13,5 @@ var txList = []tx.Transaction{
 	txdefs.CreateNewManager,
 	txdefs.CreateNewHolder,
 	txdefs.CreateNewCreditCard,
+	txdefs.CreateNewTransferency,
 }
