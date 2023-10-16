@@ -53,6 +53,10 @@ var CreateNewTransferency = tx.Transaction{
 			return nil, errors.WrapError(nil, "Parameter receiver must be an asset")
 		}
 
+		if senderKey.Key() == receiverKey.Key() {
+			return nil, errors.WrapError(nil, "Sender and receiver must be different holders")
+		}
+
 		senderAsset, err := senderKey.Get(stub)
 		if err != nil {
 			return nil, errors.WrapError(err, "Failed to get owner from the ledger")
@@ -68,10 +72,6 @@ var CreateNewTransferency = tx.Transaction{
 			return nil, errors.WrapError(err, "Failed to get owner from the ledger")
 		}
 		receiverMap := (map[string]interface{})(*receiverAsset)
-
-		if senderMap["@key"] == receiverMap["@key"] {
-			return nil, errors.WrapError(nil, "Sender and receiver must be different holders")
-		}
 
 		transferencyMap := make(map[string]interface{})
 		transferencyMap["@assetType"] = "transferency"
