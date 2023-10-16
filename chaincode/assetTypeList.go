@@ -10,4 +10,5 @@ var assetTypeList = []assets.AssetType{
 	assettypes.Holder,
 	assettypes.CreditCard,
 	assettypes.Transferency,
+	assettypes.Purchase,
 }
