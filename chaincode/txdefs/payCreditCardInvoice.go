@@ -11,10 +11,10 @@ import (
 	tx "github.com/hyperledger-labs/cc-tools/transactions"
 )
 
-var UpdateCreditCardLimit = tx.Transaction{
-	Tag:         "updateCreditCardLimit",
-	Label:       "Update credit card limit",
-	Description: "Update a credit card limit value",
+var PayCreditCardInvoice = tx.Transaction{
+	Tag:         "payCreditCardInvoice",
+	Label:       "Pay credit card invoice",
+	Description: "Pay credit card invoice",
 	Method:      "POST",
 	Callers:     []string{"$orgMSP"},
 
@@ -23,20 +23,22 @@ var UpdateCreditCardLimit = tx.Transaction{
 		{
 			Tag:         "creditCard",
 			Label:       "Credit card",
-			Description: "Credit card to be updated",
+			Description: "Credit card",
 			DataType:    "->creditCard",
 			Required:    true,
 		},
 		{
-			Tag:         "value",
-			Label:       "Updated limit value",
-			Description: "Updated limit value",
+			Tag:         "valueToPay",
+			Label:       "Value to pay",
+			Description: "Value to pay",
 			DataType:    "number",
-			Required:    true,
 		},
 	},
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
-		newLimitValue := req["value"].(float64)
+		valueToPay, ok := req["valueToPay"].(float64)
+		if !ok {
+			return nil, errors.WrapError(nil, "Parameter valueToPay must be a number")
+		}
 		creditCardKey, ok := req["creditCard"].(assets.Key)
 		if !ok {
 			return nil, errors.WrapError(nil, "Parameter creditCard must be an asset")
@@ -48,11 +50,37 @@ var UpdateCreditCardLimit = tx.Transaction{
 		}
 		creditCardMap := (map[string]interface{})(*creditCardAsset)
 
-		creditCardMap["limit"] = newLimitValue
+		ownerProp, _ := creditCardAsset.GetProp("owner").(map[string]interface{})
+		ownerKey := (assets.Key)(ownerProp)
+
+		ownerMap, err := ownerKey.GetMap(stub)
+		if err != nil {
+			return nil, errors.WrapError(err, "Failed to get owner from the ledger")
+		}
+
+		if valueToPay == 0 {
+			valueToPay = creditCardMap["limitUsed"].(float64)
+		}
+		if valueToPay > creditCardMap["limitUsed"].(float64) {
+			return nil, errors.WrapError(err, "Value to pay can't be higher than the used limit")
+		}
+		if valueToPay > ownerMap["cash"].(float64) {
+			return nil, errors.WrapError(err, "Owner doesn't have enough balance")
+		}
+
+		//UPDATING DATA
+		ownerMap["cash"] = ownerMap["cash"].(float64) - valueToPay
+		creditCardMap["limitUsed"] = creditCardMap["limitUsed"].(float64) - valueToPay
+		creditCardMap["owner"] = ownerMap
 
 		creditCardMap, err = creditCardAsset.Update(stub, creditCardMap)
 		if err != nil {
 			return nil, errors.WrapError(err, "Failed to update creditCard asset")
+		}
+
+		ownerMap, err = ownerKey.Update(stub, ownerMap)
+		if err != nil {
+			return nil, errors.WrapError(err, "Failed to update holder asset")
 		}
 
 		creditCardJSON, nerr := json.Marshal(creditCardAsset)

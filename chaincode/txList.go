@@ -18,4 +18,5 @@ var txList = []tx.Transaction{
 	txdefs.UpdateCreditCardName,
 	txdefs.CreateNewPurchase,
 	txdefs.CreateNewCreditCardPurchase,
+	txdefs.PayCreditCardInvoice,
 }

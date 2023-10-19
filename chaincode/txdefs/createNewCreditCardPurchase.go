@@ -64,7 +64,6 @@ var CreateNewCreditCardPurchase = tx.Transaction{
 		}
 
 		//REMOVE BALANCE FROM BUYER
-		creditCardMap["limit"] = creditCardMap["limit"].(float64) - purchaseValue
 		creditCardMap["limitUsed"] = creditCardMap["limitUsed"].(float64) + purchaseValue
 
 		ccPurchaseMap := make(map[string]interface{})
