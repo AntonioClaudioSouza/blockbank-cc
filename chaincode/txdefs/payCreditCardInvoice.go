@@ -83,6 +83,25 @@ var PayCreditCardInvoice = tx.Transaction{
 			return nil, errors.WrapError(err, "Failed to update holder asset")
 		}
 
+		//CREATING PAYMENT ASSET
+		invoicePaymentMap := make(map[string]interface{})
+
+		invoicePaymentMap["@assetType"] = "invoicePayment"
+		invoicePaymentMap["txId"] = stub.Stub.GetTxID()
+		invoicePaymentMap["value"] = valueToPay
+		invoicePaymentMap["owner"] = ownerMap
+		invoicePaymentMap["creditCard"] = creditCardMap
+
+		invoicePaymentAsset, err := assets.NewAsset(invoicePaymentMap)
+		if err != nil {
+			return nil, errors.WrapError(err, "Failed to create payment asset")
+		}
+
+		_, err = invoicePaymentAsset.PutNew(stub)
+		if err != nil {
+			return nil, errors.WrapError(err, "Error saving payment asset on blockchain")
+		}
+
 		creditCardJSON, nerr := json.Marshal(creditCardAsset)
 		if nerr != nil {
 			return nil, errors.WrapError(nil, "failed to encode asset to JSON format")

@@ -12,4 +12,5 @@ var assetTypeList = []assets.AssetType{
 	assettypes.Transferency,
 	assettypes.Purchase,
 	assettypes.CreditCardPurchase,
+	assettypes.InvoicePayment,
 }
