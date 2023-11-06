@@ -32,7 +32,7 @@ var Withdrawal = assets.AssetType{
 		},
 		{
 			Tag:      "date",
-			Label:    "Deposit date",
+			Label:    "Withdrawal date",
 			DataType: "datetime",
 			Required: true,
 		},

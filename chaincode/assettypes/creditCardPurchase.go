@@ -40,5 +40,11 @@ var CreditCardPurchase = assets.AssetType{
 			Label:    "Purchase value",
 			DataType: "number",
 		},
+		{
+			Required: true,
+			Tag:      "date",
+			Label:    "Purchase date",
+			DataType: "datetime",
+		},
 	},
 }
