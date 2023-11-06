@@ -24,4 +24,5 @@ var txList = []tx.Transaction{
 	txdefs.HealthCheck,
 	txdefs.ActivateCreditCard,
 	txdefs.ListManagers,
+	txdefs.ListHolders,
 }
