@@ -3,6 +3,7 @@ package txdefs
 import (
 	"encoding/json"
 
+	"github.com/hyperledger-labs/cc-tools-demo/chaincode/utils"
 	"github.com/hyperledger-labs/cc-tools/assets"
 	"github.com/hyperledger-labs/cc-tools/errors"
 
@@ -35,6 +36,8 @@ var PayCreditCardInvoice = tx.Transaction{
 		},
 	},
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
+		timeStamp, err := stub.Stub.GetTxTimestamp()
+
 		valueToPay, ok := req["valueToPay"].(float64)
 		if !ok {
 			return nil, errors.WrapError(nil, "Parameter valueToPay must be a number")
@@ -91,6 +94,7 @@ var PayCreditCardInvoice = tx.Transaction{
 		invoicePaymentMap["value"] = valueToPay
 		invoicePaymentMap["owner"] = ownerMap
 		invoicePaymentMap["creditCard"] = creditCardMap
+		invoicePaymentMap["date"] = utils.ReturnDate(timeStamp)
 
 		invoicePaymentAsset, err := assets.NewAsset(invoicePaymentMap)
 		if err != nil {

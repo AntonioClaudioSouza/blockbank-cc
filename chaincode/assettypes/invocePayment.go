@@ -37,5 +37,11 @@ var InvoicePayment = assets.AssetType{
 			DataType:     "number",
 			DefaultValue: 0,
 		},
+		{
+			Tag:      "date",
+			Label:    "Payment date",
+			DataType: "datetime",
+			Required: true,
+		},
 	},
 }
