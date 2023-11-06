@@ -23,4 +23,5 @@ var txList = []tx.Transaction{
 	txdefs.MakeWithdrawal,
 	txdefs.HealthCheck,
 	txdefs.ActivateCreditCard,
+	txdefs.ListManagers,
 }
