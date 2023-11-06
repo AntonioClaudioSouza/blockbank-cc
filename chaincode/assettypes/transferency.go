@@ -37,5 +37,11 @@ var Transferency = assets.AssetType{
 			Label:    "Value",
 			DataType: "number",
 		},
+		{
+			Tag:      "date",
+			Label:    "Transferency date",
+			DataType: "datetime",
+			Required: true,
+		},
 	},
 }

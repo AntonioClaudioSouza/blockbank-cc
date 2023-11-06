@@ -3,6 +3,7 @@ package txdefs
 import (
 	"encoding/json"
 
+	"github.com/hyperledger-labs/cc-tools-demo/chaincode/utils"
 	"github.com/hyperledger-labs/cc-tools/assets"
 	"github.com/hyperledger-labs/cc-tools/errors"
 
@@ -43,6 +44,7 @@ var CreateNewTransferency = tx.Transaction{
 		},
 	},
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
+		timeStamp, err := stub.Stub.GetTxTimestamp()
 		transferencyValue := req["value"].(float64)
 		senderKey, ok := req["sender"].(assets.Key)
 		if !ok {
@@ -79,6 +81,7 @@ var CreateNewTransferency = tx.Transaction{
 		transferencyMap["sender"] = senderMap
 		transferencyMap["receiver"] = receiverMap
 		transferencyMap["value"] = transferencyValue
+		transferencyMap["date"] = utils.ReturnDate(timeStamp)
 
 		//UPDATE BALANCES
 		senderMap["cash"] = senderMap["cash"].(float64) - transferencyValue
