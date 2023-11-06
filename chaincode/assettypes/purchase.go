@@ -40,5 +40,11 @@ var Purchase = assets.AssetType{
 			Label:    "Purchase value",
 			DataType: "number",
 		},
+		{
+			Tag:      "date",
+			Label:    "Purchase date",
+			DataType: "datetime",
+			Required: true,
+		},
 	},
 }

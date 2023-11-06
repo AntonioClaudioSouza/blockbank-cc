@@ -3,6 +3,7 @@ package txdefs
 import (
 	"encoding/json"
 
+	"github.com/hyperledger-labs/cc-tools-demo/chaincode/utils"
 	"github.com/hyperledger-labs/cc-tools/assets"
 	"github.com/hyperledger-labs/cc-tools/errors"
 
@@ -45,6 +46,7 @@ var CreateNewPurchase = tx.Transaction{
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
 		purchaseDescription := req["description"].(string)
 		purchaseValue := req["value"].(float64)
+		timeStamp, err := stub.Stub.GetTxTimestamp()
 
 		buyerKey, ok := req["buyer"].(assets.Key)
 		if !ok {
@@ -70,6 +72,7 @@ var CreateNewPurchase = tx.Transaction{
 		purchaseMap["description"] = purchaseDescription
 		purchaseMap["buyer"] = buyerMap
 		purchaseMap["value"] = purchaseValue
+		purchaseMap["date"] = utils.ReturnDate(timeStamp)
 
 		buyerMap, err = buyerAsset.Update(stub, buyerMap)
 		if err != nil {
