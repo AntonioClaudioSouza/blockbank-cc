@@ -3,6 +3,7 @@ package txdefs
 import (
 	"encoding/json"
 
+	"github.com/hyperledger-labs/cc-tools-demo/chaincode/utils"
 	"github.com/hyperledger-labs/cc-tools/assets"
 	"github.com/hyperledger-labs/cc-tools/errors"
 
@@ -37,6 +38,8 @@ var MakeDeposit = tx.Transaction{
 	},
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
 		depositValue := req["value"].(float64)
+		timeStamp, err := stub.Stub.GetTxTimestamp()
+
 		receiverKey, ok := req["receiver"].(assets.Key)
 		if !ok {
 			return nil, errors.WrapError(nil, "Parameter receiver must be an asset")
@@ -60,7 +63,20 @@ var MakeDeposit = tx.Transaction{
 			return nil, errors.WrapError(err, "Failed to update receiver asset")
 		}
 
-		receiverJSON, nerr := json.Marshal(receiverAsset)
+		//DEPOSIT MAP
+		depositMap := make(map[string]interface{})
+		depositMap["@assetType"] = "deposit"
+		depositMap["value"] = depositValue
+		depositMap["holder"] = receiverMap
+		depositMap["txId"] = stub.Stub.GetTxID()
+		depositMap["date"] = utils.ReturnDate(timeStamp)
+
+		depositAsset, err := assets.NewAsset(depositMap)
+		if err != nil {
+			return nil, errors.WrapError(err, "Failed to create deposit asset")
+		}
+
+		depositJSON, nerr := json.Marshal(depositAsset)
 		if nerr != nil {
 			return nil, errors.WrapError(nil, "failed to encode asset to JSON format")
 		}
@@ -74,6 +90,6 @@ var MakeDeposit = tx.Transaction{
 		// // Call event to log the message
 		// events.CallEvent(stub, "createLibraryLog", logMsg)
 
-		return receiverJSON, nil
+		return depositJSON, nil
 	},
 }
