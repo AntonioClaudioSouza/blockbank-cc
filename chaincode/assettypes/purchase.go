@@ -13,6 +13,13 @@ var Purchase = assets.AssetType{
 		{
 			Required: true,
 			IsKey:    true,
+			Label:    "tdId",
+			DataType: "string",
+			Tag:      "txId",
+		},
+		{
+			Required: true,
+			IsKey:    true,
 			Tag:      "description",
 			Label:    "Purchase description",
 			DataType: "string",
@@ -21,6 +28,7 @@ var Purchase = assets.AssetType{
 
 		{
 			Required: true,
+			IsKey:    true,
 			Tag:      "buyer",
 			Label:    "buyer",
 			DataType: "->holder",

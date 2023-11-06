@@ -13,6 +13,13 @@ var CreditCardPurchase = assets.AssetType{
 		{
 			Required: true,
 			IsKey:    true,
+			Label:    "tdId",
+			DataType: "string",
+			Tag:      "txId",
+		},
+		{
+			Required: true,
+			IsKey:    true,
 			Tag:      "description",
 			Label:    "Purchase description",
 			DataType: "string",
@@ -21,6 +28,7 @@ var CreditCardPurchase = assets.AssetType{
 
 		{
 			Required: true,
+			IsKey:    true,
 			Tag:      "creditCard",
 			Label:    "Credit Card",
 			DataType: "->creditCard",

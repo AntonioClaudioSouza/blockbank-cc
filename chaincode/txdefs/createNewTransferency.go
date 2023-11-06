@@ -75,6 +75,7 @@ var CreateNewTransferency = tx.Transaction{
 
 		transferencyMap := make(map[string]interface{})
 		transferencyMap["@assetType"] = "transferency"
+		transferencyMap["txId"] = stub.Stub.GetTxID()
 		transferencyMap["sender"] = senderMap
 		transferencyMap["receiver"] = receiverMap
 		transferencyMap["value"] = transferencyValue

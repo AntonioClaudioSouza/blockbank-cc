@@ -68,6 +68,7 @@ var CreateNewCreditCardPurchase = tx.Transaction{
 
 		ccPurchaseMap := make(map[string]interface{})
 		ccPurchaseMap["@assetType"] = "creditCardPurchase"
+		ccPurchaseMap["txId"] = stub.Stub.GetTxID()
 		ccPurchaseMap["description"] = purchaseDescription
 		ccPurchaseMap["creditCard"] = creditCardMap
 		ccPurchaseMap["value"] = purchaseValue

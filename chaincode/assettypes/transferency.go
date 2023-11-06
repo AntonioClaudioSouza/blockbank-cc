@@ -11,6 +11,13 @@ var Transferency = assets.AssetType{
 		{
 			Required: true,
 			IsKey:    true,
+			Label:    "tdId",
+			DataType: "string",
+			Tag:      "txId",
+		},
+		{
+			Required: true,
+			IsKey:    true,
 			Tag:      "sender",
 			Label:    "Sender",
 			DataType: "->holder",
@@ -26,7 +33,6 @@ var Transferency = assets.AssetType{
 		},
 		{
 			Required: true,
-			IsKey:    true,
 			Tag:      "value",
 			Label:    "Value",
 			DataType: "number",
