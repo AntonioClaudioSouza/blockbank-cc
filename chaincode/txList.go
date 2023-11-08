@@ -25,4 +25,5 @@ var txList = []tx.Transaction{
 	txdefs.ActivateCreditCard,
 	txdefs.ListManagers,
 	txdefs.ListHolders,
+	txdefs.GetHolderByKey,
 }
