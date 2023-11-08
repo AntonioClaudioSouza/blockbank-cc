@@ -15,7 +15,7 @@ var ListHolders = tx.Transaction{
 	Tag:         "listHolders",
 	Label:       "List holders",
 	Description: "List holders",
-	Method:      "POST",
+	Method:      "GET",
 	Callers:     []string{"$orgMSP"},
 
 	Args: []tx.Argument{},

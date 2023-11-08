@@ -15,7 +15,7 @@ var GetHolderByKey = tx.Transaction{
 	Tag:         "getHolderByKey",
 	Label:       "Get Holder By Key",
 	Description: "Get Holder By Key",
-	Method:      "POST",
+	Method:      "GET",
 	Callers:     []string{"$orgMSP"},
 
 	Args: []tx.Argument{
