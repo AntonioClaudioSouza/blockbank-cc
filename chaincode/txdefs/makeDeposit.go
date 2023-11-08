@@ -76,6 +76,11 @@ var MakeDeposit = tx.Transaction{
 			return nil, errors.WrapError(err, "Failed to create deposit asset")
 		}
 
+		_, err = depositAsset.PutNew(stub)
+		if err != nil {
+			return nil, errors.WrapError(err, "Error saving asset on blockchain")
+		}
+
 		depositJSON, nerr := json.Marshal(depositAsset)
 		if nerr != nil {
 			return nil, errors.WrapError(nil, "failed to encode asset to JSON format")
