@@ -28,4 +28,5 @@ var txList = []tx.Transaction{
 	txdefs.GetHolderByKey,
 	txdefs.GetDepositsByHolderKey,
 	txdefs.GetWithdrawalsByHolderKey,
+	txdefs.GetTransfersByHolderKey,
 }
