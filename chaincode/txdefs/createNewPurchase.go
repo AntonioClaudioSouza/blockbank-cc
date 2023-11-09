@@ -68,7 +68,7 @@ var CreateNewPurchase = tx.Transaction{
 
 		purchaseMap := make(map[string]interface{})
 		purchaseMap["@assetType"] = "purchase"
-		purchaseMap["tdId"] = stub.Stub.GetTxID()
+		purchaseMap["txId"] = stub.Stub.GetTxID()
 		purchaseMap["description"] = purchaseDescription
 		purchaseMap["buyer"] = buyerMap
 		purchaseMap["value"] = purchaseValue

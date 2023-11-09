@@ -64,11 +64,11 @@ var GetTransfersByHolderKey = tx.Transaction{
 		var err error
 		response, err := assets.Search(stub, query, "", true)
 		if err != nil {
-			return nil, errors.WrapErrorWithStatus(err, "error searching for deposits", 500)
+			return nil, errors.WrapErrorWithStatus(err, "error searching for transfers", 500)
 		}
 
-		transfesJSON, err := json.Marshal(response.Result)
+		transfersJSON, err := json.Marshal(response.Result)
 
-		return transfesJSON, nil
+		return transfersJSON, nil
 	},
 }
