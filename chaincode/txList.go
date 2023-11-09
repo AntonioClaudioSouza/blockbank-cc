@@ -31,4 +31,5 @@ var txList = []tx.Transaction{
 	txdefs.GetTransfersByHolderKey,
 	txdefs.GetCreditCardByHolderKey,
 	txdefs.GetPurchasesByHolderKey,
+	txdefs.GetCreditCardPurchasesByCreditCardKey,
 }
