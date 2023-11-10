@@ -11,10 +11,10 @@ import (
 	tx "github.com/hyperledger-labs/cc-tools/transactions"
 )
 
-var GetCreditCardPurchasesByCreditCardKey = tx.Transaction{
-	Tag:         "getCreditCardPurchasesByCreditCardKey",
-	Label:       "Get CreditCard Purchases By CreditCard Key",
-	Description: "Get CreditCard Purchases By CreditCard Key",
+var GetPaymentsByCreditCardKey = tx.Transaction{
+	Tag:         "getPaymentsByCreditCardKey",
+	Label:       "Get Payments By CreditCard Key",
+	Description: "Get Payments By CreditCard Key",
 	Method:      "GET",
 	Callers:     []string{"$orgMSP"},
 
@@ -35,7 +35,7 @@ var GetCreditCardPurchasesByCreditCardKey = tx.Transaction{
 
 		query := map[string]interface{}{
 			"selector": map[string]interface{}{
-				"@assetType": "creditCardPurchase",
+				"@assetType": "invoicePayment",
 				"creditCard": creditCardKey,
 			},
 		}
@@ -43,7 +43,7 @@ var GetCreditCardPurchasesByCreditCardKey = tx.Transaction{
 		var err error
 		response, err := assets.Search(stub, query, "", true)
 		if err != nil {
-			return nil, errors.WrapErrorWithStatus(err, "error searching for creditCard purchases", 500)
+			return nil, errors.WrapErrorWithStatus(err, "error searching for creditCard payments", 500)
 		}
 
 		purchasesJSON, err := json.Marshal(response.Result)
