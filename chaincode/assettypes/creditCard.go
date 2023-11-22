@@ -40,6 +40,7 @@ var CreditCard = assets.AssetType{
 		},
 		{
 			Required: true,
+			IsKey:    true,
 			Tag:      "owner",
 			Label:    "Credit Card Owner",
 			DataType: "->holder",

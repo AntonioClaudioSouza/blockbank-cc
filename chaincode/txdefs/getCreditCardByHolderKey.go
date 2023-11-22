@@ -2,6 +2,7 @@ package txdefs
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/hyperledger-labs/cc-tools/assets"
 	"github.com/hyperledger-labs/cc-tools/errors"
@@ -34,6 +35,7 @@ var GetCreditCardByHolderKey = tx.Transaction{
 			return nil, errors.WrapError(nil, "Parameter holder must be an asset")
 		}
 
+		fmt.Println("Cheguei aqui")
 		query := map[string]interface{}{
 			"selector": map[string]interface{}{
 				"@assetType": "creditCard",
@@ -47,8 +49,10 @@ var GetCreditCardByHolderKey = tx.Transaction{
 			return nil, errors.WrapErrorWithStatus(err, "error searching for credit card key", 500)
 		}
 
-		creditCardJSON, err := json.Marshal(response.Result[0])
-
-		return creditCardJSON, nil
+		if len(response.Result) > 0 {
+			creditCardJSON, _ := json.Marshal(response.Result[0])
+			return creditCardJSON, nil
+		}
+		return nil, errors.WrapErrorWithStatus(nil, "Credit card not found", 500)
 	},
 }

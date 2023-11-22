@@ -45,8 +45,10 @@ var GetHolderByKey = tx.Transaction{
 			return nil, errors.WrapErrorWithStatus(err, "error searching for holder", 500)
 		}
 
-		holderJSON, err := json.Marshal(response.Result[0])
-
-		return holderJSON, nil
+		if len(response.Result) > 0 {
+			holderJSON, _ := json.Marshal(response.Result[0])
+			return holderJSON, nil
+		}
+		return nil, errors.WrapErrorWithStatus(nil, "Holder not found", 500)
 	},
 }
