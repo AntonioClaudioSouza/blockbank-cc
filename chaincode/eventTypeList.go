@@ -1,7 +1,7 @@
 package main
 
 import (
-	"github.com/hyperledger-labs/cc-tools-demo/chaincode/eventtypes"
+	"github.com/hyperledger-labs/blockbank-cc/chaincode/eventtypes"
 	"github.com/hyperledger-labs/cc-tools/events"
 )
 
