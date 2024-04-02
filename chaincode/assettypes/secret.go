@@ -17,7 +17,6 @@ var Secret = assets.AssetType{
 			Tag:      "secretName",
 			Label:    "Secret Name",
 			DataType: "string",
-			Writers:  []string{`org2MSP`, "orgMSP"}, // This means only org2 can create the asset (org3 can edit)
 		},
 		{
 			// Mandatory Property

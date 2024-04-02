@@ -14,7 +14,6 @@ var Holder = assets.AssetType{
 			Tag:      "document",
 			Label:    "ID Document",
 			DataType: "string",
-			Writers:  []string{"orgMSP"},
 		},
 		{
 			Required: true,
@@ -22,7 +21,6 @@ var Holder = assets.AssetType{
 			Tag:      "name",
 			Label:    "Name",
 			DataType: "string",
-			Writers:  []string{"orgMSP"},
 		},
 		{
 			Tag:          "cash",

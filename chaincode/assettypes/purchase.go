@@ -23,16 +23,13 @@ var Purchase = assets.AssetType{
 			Tag:      "description",
 			Label:    "Purchase description",
 			DataType: "string",
-			Writers:  []string{"orgMSP"},
 		},
-
 		{
 			Required: true,
 			IsKey:    true,
 			Tag:      "buyer",
 			Label:    "buyer",
 			DataType: "->holder",
-			Writers:  []string{"orgMSP"},
 		},
 		{
 			Required: true,

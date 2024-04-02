@@ -23,16 +23,13 @@ var CreditCardPurchase = assets.AssetType{
 			Tag:      "description",
 			Label:    "Purchase description",
 			DataType: "string",
-			Writers:  []string{"orgMSP"},
 		},
-
 		{
 			Required: true,
 			IsKey:    true,
 			Tag:      "creditCard",
 			Label:    "Credit Card",
 			DataType: "->creditCard",
-			Writers:  []string{"orgMSP"},
 		},
 		{
 			Required: true,

@@ -21,7 +21,6 @@ var Transferency = assets.AssetType{
 			Tag:      "sender",
 			Label:    "Sender",
 			DataType: "->holder",
-			Writers:  []string{"orgMSP"},
 		},
 		{
 			Required: true,
@@ -29,7 +28,6 @@ var Transferency = assets.AssetType{
 			Tag:      "receiver",
 			Label:    "Receiver",
 			DataType: "->holder",
-			Writers:  []string{"orgMSP"},
 		},
 		{
 			Required: true,
