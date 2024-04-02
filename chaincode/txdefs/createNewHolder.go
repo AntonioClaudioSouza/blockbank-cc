@@ -6,7 +6,6 @@ import (
 	"github.com/hyperledger-labs/cc-tools/assets"
 	"github.com/hyperledger-labs/cc-tools/errors"
 
-	// "github.com/hyperledger-labs/cc-tools/events"
 	sw "github.com/hyperledger-labs/cc-tools/stubwrapper"
 	tx "github.com/hyperledger-labs/cc-tools/transactions"
 )
@@ -16,7 +15,6 @@ var CreateNewHolder = tx.Transaction{
 	Label:       "Create new holder",
 	Description: "Create a new holder",
 	Method:      "POST",
-	Callers:     []string{"$orgMSP"},
 
 	Args: []tx.Argument{
 		{
@@ -44,6 +42,7 @@ var CreateNewHolder = tx.Transaction{
 			DataType: "boolean",
 		},
 	},
+
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
 		name, _ := req["name"].(string)
 		document, _ := req["document"].(string)
@@ -71,15 +70,6 @@ var CreateNewHolder = tx.Transaction{
 		if nerr != nil {
 			return nil, errors.WrapError(nil, "failed to encode asset to JSON format")
 		}
-
-		// // Marshall message to be logged
-		// logMsg, ok := json.Marshal(fmt.Sprintf("New library name: %s", name))
-		// if ok != nil {
-		// 	return nil, errors.WrapError(nil, "failed to encode asset to JSON format")
-		// }
-
-		// // Call event to log the message
-		// events.CallEvent(stub, "createLibraryLog", logMsg)
 
 		return holderJSON, nil
 	},

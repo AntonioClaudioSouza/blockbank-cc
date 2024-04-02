@@ -2,12 +2,12 @@ package txdefs
 
 import (
 	"encoding/json"
+	"net/http"
 
-	"github.com/hyperledger-labs/cc-tools-demo/chaincode/utils"
+	"github.com/hyperledger-labs/blockbank-cc/chaincode/utils"
 	"github.com/hyperledger-labs/cc-tools/assets"
 	"github.com/hyperledger-labs/cc-tools/errors"
 
-	// "github.com/hyperledger-labs/cc-tools/events"
 	sw "github.com/hyperledger-labs/cc-tools/stubwrapper"
 	tx "github.com/hyperledger-labs/cc-tools/transactions"
 )
@@ -17,10 +17,8 @@ var CreateNewPurchase = tx.Transaction{
 	Label:       "Create new purchase",
 	Description: "Create a new purchase",
 	Method:      "POST",
-	Callers:     []string{"$orgMSP"},
 
 	Args: []tx.Argument{
-
 		{
 			Tag:         "buyer",
 			Label:       "Buyer",
@@ -43,29 +41,30 @@ var CreateNewPurchase = tx.Transaction{
 			Required:    true,
 		},
 	},
+
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
-		purchaseDescription := req["description"].(string)
+		purchaseDescription, _ := req["description"].(string)
 		purchaseValue := req["value"].(float64)
-		timeStamp, err := stub.Stub.GetTxTimestamp()
+		buyerKey, _ := req["buyer"].(assets.Key)
 
-		buyerKey, ok := req["buyer"].(assets.Key)
-		if !ok {
-			return nil, errors.WrapError(nil, "Parameter owner must be an asset")
-		}
-
-		buyerAsset, err := buyerKey.Get(stub)
+		buyerMap, err := buyerKey.GetMap(stub)
 		if err != nil {
-			return nil, errors.WrapError(err, "Failed to get owner from the ledger")
+			return nil, errors.NewCCError("failed to get owner from the ledger: "+err.Error(), http.StatusBadRequest)
 		}
-		buyerMap := (map[string]interface{})(*buyerAsset)
 
 		if buyerMap["cash"].(float64) < purchaseValue {
-			return nil, errors.WrapError(err, "Buyer doesn't have enough balance to make this purchase")
+			return nil, errors.NewCCError("buyer doesn't have enough balance to make this purchase", http.StatusBadRequest)
 		}
 
-		//REMOVE BALANCE FROM BUYER
-		buyerMap["cash"] = buyerMap["cash"].(float64) - purchaseValue
+		// ** REMOVE BALANCE FROM BUYER
+		buyerMap, err = buyerKey.Update(stub, map[string]interface{}{
+			"cash": buyerMap["cash"].(float64) - purchaseValue,
+		})
+		if err != nil {
+			return nil, errors.NewCCError("failed to update buyer asset: "+err.Error(), http.StatusBadRequest)
+		}
 
+		timeStamp, _ := stub.Stub.GetTxTimestamp()
 		purchaseMap := make(map[string]interface{})
 		purchaseMap["@assetType"] = "purchase"
 		purchaseMap["txId"] = stub.Stub.GetTxID()
@@ -74,34 +73,20 @@ var CreateNewPurchase = tx.Transaction{
 		purchaseMap["value"] = purchaseValue
 		purchaseMap["date"] = utils.ReturnDate(timeStamp)
 
-		buyerMap, err = buyerAsset.Update(stub, buyerMap)
-		if err != nil {
-			return nil, errors.WrapError(err, "Failed to update buyer asset")
-		}
-
 		purchaseAsset, err := assets.NewAsset(purchaseMap)
 		if err != nil {
-			return nil, errors.WrapError(err, "Failed to create creditCard asset")
+			return nil, errors.NewCCError("failed to create creditCard asset: "+err.Error(), http.StatusBadRequest)
 		}
 
-		_, err = purchaseAsset.PutNew(stub)
+		purchaseMap, err = purchaseAsset.PutNew(stub)
 		if err != nil {
-			return nil, errors.WrapError(err, "Error saving asset on blockchain")
+			return nil, errors.NewCCError("error saving asset on blockchain: "+err.Error(), http.StatusBadRequest)
 		}
 
-		purchaseJSON, nerr := json.Marshal(purchaseAsset)
+		purchaseJSON, nerr := json.Marshal(purchaseMap)
 		if nerr != nil {
-			return nil, errors.WrapError(nil, "failed to encode asset to JSON format")
+			return nil, errors.NewCCError("failed to encode asset to JSON format: "+nerr.Error(), http.StatusBadRequest)
 		}
-
-		// // Marshall message to be logged
-		// logMsg, ok := json.Marshal(fmt.Sprintf("New library name: %s", name))
-		// if ok != nil {
-		// 	return nil, errors.WrapError(nil, "failed to encode asset to JSON format")
-		// }
-
-		// // Call event to log the message
-		// events.CallEvent(stub, "createLibraryLog", logMsg)
 
 		return purchaseJSON, nil
 	},

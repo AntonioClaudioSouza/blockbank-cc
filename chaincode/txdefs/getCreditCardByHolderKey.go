@@ -2,7 +2,6 @@ package txdefs
 
 import (
 	"encoding/json"
-	"fmt"
 
 	"github.com/hyperledger-labs/cc-tools/assets"
 	"github.com/hyperledger-labs/cc-tools/errors"
@@ -17,7 +16,6 @@ var GetCreditCardByHolderKey = tx.Transaction{
 	Label:       "Get Credit Card By Holder Key",
 	Description: "Get Credit Card By Holder Key",
 	Method:      "GET",
-	Callers:     []string{"$orgMSP"},
 
 	Args: []tx.Argument{
 		{
@@ -28,18 +26,15 @@ var GetCreditCardByHolderKey = tx.Transaction{
 			Required:    true,
 		},
 	},
+
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
 
-		holderKey, ok := req["holder"].(assets.Key)
-		if !ok {
-			return nil, errors.WrapError(nil, "Parameter holder must be an asset")
-		}
+		holderKey, _ := req["holder"].(assets.Key)
 
-		fmt.Println("Cheguei aqui")
 		query := map[string]interface{}{
 			"selector": map[string]interface{}{
 				"@assetType": "creditCard",
-				"owner":      holderKey,
+				"owner.@key": holderKey.Key(),
 			},
 		}
 

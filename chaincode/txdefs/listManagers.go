@@ -6,7 +6,6 @@ import (
 	"github.com/hyperledger-labs/cc-tools/assets"
 	"github.com/hyperledger-labs/cc-tools/errors"
 
-	// "github.com/hyperledger-labs/cc-tools/events"
 	sw "github.com/hyperledger-labs/cc-tools/stubwrapper"
 	tx "github.com/hyperledger-labs/cc-tools/transactions"
 )
@@ -16,9 +15,9 @@ var ListManagers = tx.Transaction{
 	Label:       "List managers",
 	Description: "List managers",
 	Method:      "POST",
-	Callers:     []string{"$orgMSP"},
 
 	Args: []tx.Argument{},
+
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
 
 		query := map[string]interface{}{
@@ -33,8 +32,7 @@ var ListManagers = tx.Transaction{
 			return nil, errors.WrapErrorWithStatus(err, "error searching for managers", 500)
 		}
 
-		managersJSON, err := json.Marshal(response.Result)
-
+		managersJSON, _ := json.Marshal(response.Result)
 		return managersJSON, nil
 	},
 }

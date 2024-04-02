@@ -5,7 +5,6 @@ import (
 
 	"github.com/hyperledger-labs/cc-tools/errors"
 
-	// "github.com/hyperledger-labs/cc-tools/events"
 	sw "github.com/hyperledger-labs/cc-tools/stubwrapper"
 	tx "github.com/hyperledger-labs/cc-tools/transactions"
 )
@@ -15,9 +14,9 @@ var HealthCheck = tx.Transaction{
 	Label:       "Health Check",
 	Description: "Check if CCAPI is working",
 	Method:      "GET",
-	Callers:     []string{"$orgMSP"},
 
 	Args: []tx.Argument{},
+
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
 
 		ok := map[string]interface{}{
@@ -25,7 +24,6 @@ var HealthCheck = tx.Transaction{
 		}
 
 		okJSON, _ := json.Marshal(ok)
-
 		return okJSON, nil
 	},
 }

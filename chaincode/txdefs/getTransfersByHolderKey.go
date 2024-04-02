@@ -6,7 +6,6 @@ import (
 	"github.com/hyperledger-labs/cc-tools/assets"
 	"github.com/hyperledger-labs/cc-tools/errors"
 
-	// "github.com/hyperledger-labs/cc-tools/events"
 	sw "github.com/hyperledger-labs/cc-tools/stubwrapper"
 	tx "github.com/hyperledger-labs/cc-tools/transactions"
 )
@@ -15,15 +14,15 @@ func checkSent(sentBool bool, holder assets.Key) map[string]interface{} {
 	if sentBool {
 		return map[string]interface{}{
 			"selector": map[string]interface{}{
-				"@assetType": "transferency",
-				"sender":     holder,
+				"@assetType":  "transferency",
+				"sender.@key": holder.Key(),
 			},
 		}
 	} else {
 		return map[string]interface{}{
 			"selector": map[string]interface{}{
-				"@assetType": "transferency",
-				"receiver":   holder,
+				"@assetType":    "transferency",
+				"receiver.@key": holder.Key(),
 			},
 		}
 	}
@@ -34,7 +33,6 @@ var GetTransfersByHolderKey = tx.Transaction{
 	Label:       "Get Transfers By Holder Key",
 	Description: "Get Transfers By Holder Key",
 	Method:      "GET",
-	Callers:     []string{"$orgMSP"},
 
 	Args: []tx.Argument{
 		{
@@ -52,12 +50,10 @@ var GetTransfersByHolderKey = tx.Transaction{
 			Required:    true,
 		},
 	},
+
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
-		sent := req["sent"].(bool)
-		holderKey, ok := req["holder"].(assets.Key)
-		if !ok {
-			return nil, errors.WrapError(nil, "Parameter holder must be an asset")
-		}
+		sent, _ := req["sent"].(bool)
+		holderKey, _ := req["holder"].(assets.Key)
 
 		query := checkSent(sent, holderKey)
 
@@ -67,8 +63,7 @@ var GetTransfersByHolderKey = tx.Transaction{
 			return nil, errors.WrapErrorWithStatus(err, "error searching for transfers", 500)
 		}
 
-		transfersJSON, err := json.Marshal(response.Result)
-
+		transfersJSON, _ := json.Marshal(response.Result)
 		return transfersJSON, nil
 	},
 }

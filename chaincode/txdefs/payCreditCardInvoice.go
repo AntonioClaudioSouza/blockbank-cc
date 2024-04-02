@@ -3,11 +3,10 @@ package txdefs
 import (
 	"encoding/json"
 
-	"github.com/hyperledger-labs/cc-tools-demo/chaincode/utils"
+	"github.com/hyperledger-labs/blockbank-cc/chaincode/utils"
 	"github.com/hyperledger-labs/cc-tools/assets"
 	"github.com/hyperledger-labs/cc-tools/errors"
 
-	// "github.com/hyperledger-labs/cc-tools/events"
 	sw "github.com/hyperledger-labs/cc-tools/stubwrapper"
 	tx "github.com/hyperledger-labs/cc-tools/transactions"
 )
@@ -17,10 +16,8 @@ var PayCreditCardInvoice = tx.Transaction{
 	Label:       "Pay credit card invoice",
 	Description: "Pay credit card invoice",
 	Method:      "POST",
-	Callers:     []string{"$orgMSP"},
 
 	Args: []tx.Argument{
-
 		{
 			Tag:         "creditCard",
 			Label:       "Credit card",
@@ -33,29 +30,21 @@ var PayCreditCardInvoice = tx.Transaction{
 			Label:       "Value to pay",
 			Description: "Value to pay",
 			DataType:    "number",
+			Required:    true,
 		},
 	},
+
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
-		timeStamp, err := stub.Stub.GetTxTimestamp()
 
-		valueToPay, ok := req["valueToPay"].(float64)
-		if !ok {
-			return nil, errors.WrapError(nil, "Parameter valueToPay must be a number")
-		}
-		creditCardKey, ok := req["creditCard"].(assets.Key)
-		if !ok {
-			return nil, errors.WrapError(nil, "Parameter creditCard must be an asset")
-		}
+		valueToPay, _ := req["valueToPay"].(float64)
+		creditCardKey, _ := req["creditCard"].(assets.Key)
 
-		creditCardAsset, err := creditCardKey.Get(stub)
+		creditCardMap, err := creditCardKey.GetMap(stub)
 		if err != nil {
 			return nil, errors.WrapError(err, "Failed to get creditCard from the ledger")
 		}
-		creditCardMap := (map[string]interface{})(*creditCardAsset)
 
-		ownerProp, _ := creditCardAsset.GetProp("owner").(map[string]interface{})
-		ownerKey := (assets.Key)(ownerProp)
-
+		ownerKey, _ := assets.NewKey(creditCardMap["owner"].(map[string]interface{}))
 		ownerMap, err := ownerKey.GetMap(stub)
 		if err != nil {
 			return nil, errors.WrapError(err, "Failed to get owner from the ledger")
@@ -64,24 +53,27 @@ var PayCreditCardInvoice = tx.Transaction{
 		if valueToPay == 0 {
 			valueToPay = creditCardMap["limitUsed"].(float64)
 		}
+
 		if valueToPay > creditCardMap["limitUsed"].(float64) {
 			return nil, errors.WrapError(err, "Value to pay can't be higher than the used limit")
 		}
+
 		if valueToPay > ownerMap["cash"].(float64) {
 			return nil, errors.WrapError(err, "Owner doesn't have enough balance")
 		}
 
 		//UPDATING DATA
-		ownerMap["cash"] = ownerMap["cash"].(float64) - valueToPay
-		creditCardMap["limitUsed"] = creditCardMap["limitUsed"].(float64) - valueToPay
-		creditCardMap["owner"] = ownerMap
-
-		creditCardMap, err = creditCardAsset.Update(stub, creditCardMap)
+		creditCardMap, err = creditCardKey.Update(stub, map[string]interface{}{
+			"limitUsed": creditCardMap["limitUsed"].(float64) - valueToPay,
+			"owner":     ownerMap,
+		})
 		if err != nil {
 			return nil, errors.WrapError(err, "Failed to update creditCard asset")
 		}
 
-		ownerMap, err = ownerKey.Update(stub, ownerMap)
+		ownerMap, err = ownerKey.Update(stub, map[string]interface{}{
+			"cash": ownerMap["cash"].(float64) - valueToPay,
+		})
 		if err != nil {
 			return nil, errors.WrapError(err, "Failed to update holder asset")
 		}
@@ -89,6 +81,7 @@ var PayCreditCardInvoice = tx.Transaction{
 		//CREATING PAYMENT ASSET
 		invoicePaymentMap := make(map[string]interface{})
 
+		timeStamp, _ := stub.Stub.GetTxTimestamp()
 		invoicePaymentMap["@assetType"] = "invoicePayment"
 		invoicePaymentMap["txId"] = stub.Stub.GetTxID()
 		invoicePaymentMap["value"] = valueToPay
@@ -106,19 +99,10 @@ var PayCreditCardInvoice = tx.Transaction{
 			return nil, errors.WrapError(err, "Error saving payment asset on blockchain")
 		}
 
-		creditCardJSON, nerr := json.Marshal(creditCardAsset)
+		creditCardJSON, nerr := json.Marshal(creditCardMap)
 		if nerr != nil {
 			return nil, errors.WrapError(nil, "failed to encode asset to JSON format")
 		}
-
-		// // Marshall message to be logged
-		// logMsg, ok := json.Marshal(fmt.Sprintf("New library name: %s", name))
-		// if ok != nil {
-		// 	return nil, errors.WrapError(nil, "failed to encode asset to JSON format")
-		// }
-
-		// // Call event to log the message
-		// events.CallEvent(stub, "createLibraryLog", logMsg)
 
 		return creditCardJSON, nil
 	},

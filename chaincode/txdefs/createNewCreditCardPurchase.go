@@ -2,12 +2,12 @@ package txdefs
 
 import (
 	"encoding/json"
+	"net/http"
 
-	"github.com/hyperledger-labs/cc-tools-demo/chaincode/utils"
+	"github.com/hyperledger-labs/blockbank-cc/chaincode/utils"
 	"github.com/hyperledger-labs/cc-tools/assets"
 	"github.com/hyperledger-labs/cc-tools/errors"
 
-	// "github.com/hyperledger-labs/cc-tools/events"
 	sw "github.com/hyperledger-labs/cc-tools/stubwrapper"
 	tx "github.com/hyperledger-labs/cc-tools/transactions"
 )
@@ -17,10 +17,8 @@ var CreateNewCreditCardPurchase = tx.Transaction{
 	Label:       "Create new credit card purchase",
 	Description: "Create a new credit card purchase",
 	Method:      "POST",
-	Callers:     []string{"$orgMSP"},
 
 	Args: []tx.Argument{
-
 		{
 			Tag:         "creditCard",
 			Label:       "Credit Card",
@@ -43,31 +41,32 @@ var CreateNewCreditCardPurchase = tx.Transaction{
 			Required:    true,
 		},
 	},
+
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
-		purchaseDescription := req["description"].(string)
-		purchaseValue := req["value"].(float64)
-		timeStamp, err := stub.Stub.GetTxTimestamp()
+		purchaseDescription, _ := req["description"].(string)
+		purchaseValue, _ := req["value"].(float64)
+		creditCardKey, _ := req["creditCard"].(assets.Key)
 
-		creditCardKey, ok := req["creditCard"].(assets.Key)
-		if !ok {
-			return nil, errors.WrapError(nil, "Parameter creditCard must be an asset")
-		}
-
-		creditCardAsset, err := creditCardKey.Get(stub)
+		// ** Get creditCard and check limit
+		creditCardMap, err := creditCardKey.GetMap(stub)
 		if err != nil {
-			return nil, errors.WrapError(err, "Failed to get owner from the ledger")
+			return nil, errors.NewCCError("failed to get owner from the ledger: "+err.Error(), http.StatusBadRequest)
 		}
-		creditCardMap := (map[string]interface{})(*creditCardAsset)
 
 		availableLimit := creditCardMap["limit"].(float64) - creditCardMap["limitUsed"].(float64)
-
 		if availableLimit < purchaseValue {
-			return nil, errors.WrapError(err, "Credit card doesn't have enough limit to make this purchase")
+			return nil, errors.NewCCError("credit card doesn't have enough limit to make this purchase", http.StatusBadRequest)
 		}
 
-		//REMOVE BALANCE FROM BUYER
-		creditCardMap["limitUsed"] = creditCardMap["limitUsed"].(float64) + purchaseValue
+		// ** REMOVE BALANCE FROM BUYER AND UPDATE
+		creditCardMap, err = creditCardKey.Update(stub, map[string]interface{}{
+			"limitUsed": creditCardMap["limitUsed"].(float64) + purchaseValue,
+		})
+		if err != nil {
+			return nil, errors.NewCCError("failed to update creditCard asset: "+err.Error(), http.StatusBadRequest)
+		}
 
+		timeStamp, _ := stub.Stub.GetTxTimestamp()
 		ccPurchaseMap := make(map[string]interface{})
 		ccPurchaseMap["@assetType"] = "creditCardPurchase"
 		ccPurchaseMap["txId"] = stub.Stub.GetTxID()
@@ -76,34 +75,20 @@ var CreateNewCreditCardPurchase = tx.Transaction{
 		ccPurchaseMap["value"] = purchaseValue
 		ccPurchaseMap["date"] = utils.ReturnDate(timeStamp)
 
-		creditCardMap, err = creditCardAsset.Update(stub, creditCardMap)
-		if err != nil {
-			return nil, errors.WrapError(err, "Failed to update creditCard asset")
-		}
-
 		ccPurchaseAsset, err := assets.NewAsset(ccPurchaseMap)
 		if err != nil {
-			return nil, errors.WrapError(err, "Failed to create purchase asset")
+			return nil, errors.NewCCError("failed to create purchase asset: "+err.Error(), http.StatusBadRequest)
 		}
 
 		_, err = ccPurchaseAsset.PutNew(stub)
 		if err != nil {
-			return nil, errors.WrapError(err, "Error saving asset on blockchain")
+			return nil, errors.NewCCError("error saving asset on blockchain: "+err.Error(), http.StatusBadRequest)
 		}
 
 		ccPurchaseJSON, nerr := json.Marshal(ccPurchaseAsset)
 		if nerr != nil {
-			return nil, errors.WrapError(nil, "failed to encode asset to JSON format")
+			return nil, errors.NewCCError("failed to encode asset to JSON format: "+nerr.Error(), http.StatusBadRequest)
 		}
-
-		// // Marshall message to be logged
-		// logMsg, ok := json.Marshal(fmt.Sprintf("New library name: %s", name))
-		// if ok != nil {
-		// 	return nil, errors.WrapError(nil, "failed to encode asset to JSON format")
-		// }
-
-		// // Call event to log the message
-		// events.CallEvent(stub, "createLibraryLog", logMsg)
 
 		return ccPurchaseJSON, nil
 	},

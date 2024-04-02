@@ -6,7 +6,6 @@ import (
 	"github.com/hyperledger-labs/cc-tools/assets"
 	"github.com/hyperledger-labs/cc-tools/errors"
 
-	// "github.com/hyperledger-labs/cc-tools/events"
 	sw "github.com/hyperledger-labs/cc-tools/stubwrapper"
 	tx "github.com/hyperledger-labs/cc-tools/transactions"
 )
@@ -16,7 +15,6 @@ var GetPurchasesByHolderKey = tx.Transaction{
 	Label:       "Get Purchases By Holder Key",
 	Description: "Get Purchases By Holder Key",
 	Method:      "GET",
-	Callers:     []string{"$orgMSP"},
 
 	Args: []tx.Argument{
 		{
@@ -27,17 +25,15 @@ var GetPurchasesByHolderKey = tx.Transaction{
 			Required:    true,
 		},
 	},
+
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
 
-		holderKey, ok := req["holder"].(assets.Key)
-		if !ok {
-			return nil, errors.WrapError(nil, "Parameter holder must be an asset")
-		}
+		holderKey, _ := req["holder"].(assets.Key)
 
 		query := map[string]interface{}{
 			"selector": map[string]interface{}{
 				"@assetType": "purchase",
-				"buyer":      holderKey,
+				"buyer.@key": holderKey.Key(),
 			},
 		}
 
@@ -47,8 +43,7 @@ var GetPurchasesByHolderKey = tx.Transaction{
 			return nil, errors.WrapErrorWithStatus(err, "error searching for purchases", 500)
 		}
 
-		purchasesJSON, err := json.Marshal(response.Result)
-
+		purchasesJSON, _ := json.Marshal(response.Result)
 		return purchasesJSON, nil
 	},
 }

@@ -6,7 +6,6 @@ import (
 	"github.com/hyperledger-labs/cc-tools/assets"
 	"github.com/hyperledger-labs/cc-tools/errors"
 
-	// "github.com/hyperledger-labs/cc-tools/events"
 	sw "github.com/hyperledger-labs/cc-tools/stubwrapper"
 	tx "github.com/hyperledger-labs/cc-tools/transactions"
 )
@@ -16,7 +15,6 @@ var GetWithdrawalsByHolderKey = tx.Transaction{
 	Label:       "Get Withdrawals By Holder Key",
 	Description: "Get Withdrawals By Holder Key",
 	Method:      "GET",
-	Callers:     []string{"$orgMSP"},
 
 	Args: []tx.Argument{
 		{
@@ -27,11 +25,10 @@ var GetWithdrawalsByHolderKey = tx.Transaction{
 			Required:    true,
 		},
 	},
+
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
-		holderKey, ok := req["holder"].(assets.Key)
-		if !ok {
-			return nil, errors.WrapError(nil, "Parameter holder must be an asset")
-		}
+		holderKey, _ := req["holder"].(assets.Key)
+
 		query := map[string]interface{}{
 			"selector": map[string]interface{}{
 				"@assetType": "withdrawal",
@@ -45,8 +42,7 @@ var GetWithdrawalsByHolderKey = tx.Transaction{
 			return nil, errors.WrapErrorWithStatus(err, "error searching for deposits", 500)
 		}
 
-		withdrawalsJSON, err := json.Marshal(response.Result)
-
+		withdrawalsJSON, _ := json.Marshal(response.Result)
 		return withdrawalsJSON, nil
 	},
 }

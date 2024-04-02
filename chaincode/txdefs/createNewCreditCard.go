@@ -4,12 +4,12 @@ import (
 	"encoding/json"
 	"fmt"
 	"math/rand"
+	"net/http"
 
 	"github.com/hyperledger-labs/cc-tools/assets"
 	"github.com/hyperledger-labs/cc-tools/errors"
 	"google.golang.org/protobuf/types/known/timestamppb"
 
-	// "github.com/hyperledger-labs/cc-tools/events"
 	sw "github.com/hyperledger-labs/cc-tools/stubwrapper"
 	tx "github.com/hyperledger-labs/cc-tools/transactions"
 )
@@ -56,10 +56,8 @@ var CreateNewCreditCard = tx.Transaction{
 	Label:       "Create new credit card",
 	Description: "Create a new credit card",
 	Method:      "POST",
-	Callers:     []string{"$orgMSP"},
 
 	Args: []tx.Argument{
-
 		{
 			Tag:         "owner",
 			Label:       "Credit card owner",
@@ -75,18 +73,13 @@ var CreateNewCreditCard = tx.Transaction{
 			Required:    true,
 		},
 	},
-	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
-		timeStamp, _ := stub.Stub.GetTxTimestamp()
-		number := generateValidCreditCardNumber(timeStamp)
 
+	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
+
+		ownerKey, _ := req["owner"].(assets.Key)
 		creditCardName := req["creditCardName"].(string)
 
-		ownerKey, ok := req["owner"].(assets.Key)
-		if !ok {
-			return nil, errors.WrapError(nil, "Parameter owner must be an asset")
-		}
-
-		// Prepare couchdb query
+		// ** Prepare couchdb query for checking if the user already has a credit card
 		query := map[string]interface{}{
 			"selector": map[string]interface{}{
 				"@assetType": "creditCard",
@@ -94,54 +87,45 @@ var CreateNewCreditCard = tx.Transaction{
 			},
 		}
 
-		var err error
-		response, err := assets.Search(stub, query, "", true)
-		if err != nil {
-			return nil, errors.WrapErrorWithStatus(err, "error searching for credit card", 500)
-		}
-		if len(response.Result) >= 1 {
-			return nil, errors.WrapErrorWithStatus(err, "Holder already have a credit card", 500)
+		if response, err := assets.Search(stub, query, "", true); err != nil {
+			return nil, errors.NewCCError("error searching for credit card", http.StatusBadRequest)
+		} else {
+
+			// ** If exist credcard with this owner - return error
+			if len(response.Result) >= 1 {
+				return nil, errors.NewCCError("holder already have a credit card", http.StatusBadRequest)
+			}
 		}
 
-		ownerAsset, err := ownerKey.Get(stub)
+		ownerMap, err := ownerKey.GetMap(stub)
 		if err != nil {
-			return nil, errors.WrapError(err, "Failed to get owner from the ledger")
+			return nil, errors.NewCCError("failed to get owner from the ledger", http.StatusBadRequest)
 		}
-		ownerMap := (map[string]interface{})(*ownerAsset)
 
 		if !ownerMap["ccAvailable"].(bool) {
-			return nil, errors.WrapError(err, "Holder doesn't have a credit card available")
+			return nil, errors.NewCCError("holder doesn't have a credit card available", http.StatusBadRequest)
 		}
 
-		ccMap := make(map[string]interface{})
-		ccMap["@assetType"] = "creditCard"
-		ccMap["number"] = number
-		ccMap["owner"] = ownerMap
-		ccMap["creditCardName"] = creditCardName
-
-		ccAsset, err := assets.NewAsset(ccMap)
+		timeStamp, _ := stub.Stub.GetTxTimestamp()
+		ccAsset, err := assets.NewAsset(map[string]interface{}{
+			"@assetType":     "creditCard",
+			"number":         generateValidCreditCardNumber(timeStamp),
+			"owner":          ownerMap,
+			"creditCardName": creditCardName,
+		})
 		if err != nil {
-			return nil, errors.WrapError(err, "Failed to create creditCard asset")
+			return nil, errors.NewCCError("failed to create creditCard asset :"+err.Error(), http.StatusBadRequest)
 		}
 
-		_, err = ccAsset.PutNew(stub)
+		ccAssetMap, err := ccAsset.PutNew(stub)
 		if err != nil {
-			return nil, errors.WrapError(err, "Error saving asset on blockchain")
+			return nil, errors.NewCCError("error saving asset on blockchain :"+err.Error(), http.StatusBadRequest)
 		}
 
-		ccJSON, nerr := json.Marshal(ccAsset)
+		ccJSON, nerr := json.Marshal(ccAssetMap)
 		if nerr != nil {
-			return nil, errors.WrapError(nil, "failed to encode asset to JSON format")
+			return nil, errors.NewCCError("failed to encode asset to JSON format :"+nerr.Error(), http.StatusBadRequest)
 		}
-
-		// // Marshall message to be logged
-		// logMsg, ok := json.Marshal(fmt.Sprintf("New library name: %s", name))
-		// if ok != nil {
-		// 	return nil, errors.WrapError(nil, "failed to encode asset to JSON format")
-		// }
-
-		// // Call event to log the message
-		// events.CallEvent(stub, "createLibraryLog", logMsg)
 
 		return ccJSON, nil
 	},

@@ -6,7 +6,6 @@ import (
 	"github.com/hyperledger-labs/cc-tools/assets"
 	"github.com/hyperledger-labs/cc-tools/errors"
 
-	// "github.com/hyperledger-labs/cc-tools/events"
 	sw "github.com/hyperledger-labs/cc-tools/stubwrapper"
 	tx "github.com/hyperledger-labs/cc-tools/transactions"
 )
@@ -16,7 +15,6 @@ var GetPaymentsByCreditCardKey = tx.Transaction{
 	Label:       "Get Payments By CreditCard Key",
 	Description: "Get Payments By CreditCard Key",
 	Method:      "GET",
-	Callers:     []string{"$orgMSP"},
 
 	Args: []tx.Argument{
 		{
@@ -27,16 +25,14 @@ var GetPaymentsByCreditCardKey = tx.Transaction{
 			Required:    true,
 		},
 	},
+
 	Routine: func(stub *sw.StubWrapper, req map[string]interface{}) ([]byte, errors.ICCError) {
-		creditCardKey, ok := req["creditCard"].(assets.Key)
-		if !ok {
-			return nil, errors.WrapError(nil, "Parameter creditCard must be an asset")
-		}
+		creditCardKey, _ := req["creditCard"].(assets.Key)
 
 		query := map[string]interface{}{
 			"selector": map[string]interface{}{
-				"@assetType": "invoicePayment",
-				"creditCard": creditCardKey,
+				"@assetType":      "invoicePayment",
+				"creditCard.@key": creditCardKey.Key(),
 			},
 		}
 
@@ -46,8 +42,7 @@ var GetPaymentsByCreditCardKey = tx.Transaction{
 			return nil, errors.WrapErrorWithStatus(err, "error searching for creditCard payments", 500)
 		}
 
-		purchasesJSON, err := json.Marshal(response.Result)
-
+		purchasesJSON, _ := json.Marshal(response.Result)
 		return purchasesJSON, nil
 	},
 }
