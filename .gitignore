@@ -5,7 +5,7 @@ fabric/channel-artifacts
 fabric/ca
 chaincode/vendor/*
 ccapi/vendor/*
-cc-tools-demo.tar.gz
+blockbank-cc.tar.gz
 package-lock.json
 
 .DS_Store

@@ -198,7 +198,7 @@ Application: &ApplicationDefaults
     # Policies defines the set of policies at this level of the config tree
     # For Application policies, their canonical path is
     #   /Channel/Application/<PolicyName>
-    # Endorsement for org2 OR org3 due to the private data collection 'secret' in cc-tools-demo
+    # Endorsement for org2 OR org3 due to the private data collection 'secret' in blockbank-cc
     Policies:
         Readers:
             Type: ImplicitMeta

@@ -1,4 +1,4 @@
-module github.com/hyperledger-labs/cc-tools-demo/chaincode
+module github.com/hyperledger-labs/blockbank-cc/chaincode
 
 go 1.13
 

@@ -1,7 +1,7 @@
-version: "2"
+version: "3"
 
 networks:
-  cc-tools-demo-net:
+  blockbank-cc-net:
     external: true
 
 services:
@@ -23,11 +23,11 @@ services:
       - ORG=org
       - DOMAIN=example.com
       - CHANNEL=mainchannel
-      - CCNAME=cc-tools-demo
+      - CCNAME=blockbank-cc
       - FABRIC_GATEWAY_ENDPOINT=peer0.org.example.com:7051
       - FABRIC_GATEWAY_NAME=peer0.org.example.com
       - GOLANG_PROTOBUF_REGISTRATION_CONFLICT=warn
     working_dir: /rest-server
     container_name: ccapi.org.example.com
     networks:
-      - cc-tools-demo-net
+      - blockbank-cc-net

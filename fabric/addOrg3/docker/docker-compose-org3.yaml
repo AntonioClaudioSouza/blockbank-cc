@@ -2,9 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-
-version: '2'
-
+version: "3"
 volumes:
   peer0.org3.example.com:
 
@@ -22,7 +20,7 @@ services:
       # the following setting starts chaincode containers on the same
       # bridge network as the peers
       # https://docs.docker.com/compose/networking/
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=cc-tools-demo-net
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=blockbank-cc-net
       - FABRIC_LOGGING_SPEC=INFO
       #- FABRIC_LOGGING_SPEC=DEBUG
       - CORE_PEER_TLS_ENABLED=true

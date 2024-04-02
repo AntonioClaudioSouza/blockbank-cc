@@ -2,9 +2,7 @@
 #
 # SPDX-License-Identifier: Apache-2.0
 #
-
-version: '2'
-
+version: "3"
 volumes:
   orderer.example.com:
   peer0.org1.example.com:
@@ -12,7 +10,7 @@ volumes:
   peer0.org3.example.com:
 
 networks:
-  cc-tools-demo-net:
+  blockbank-cc-net:
     external: true
 
 services:
@@ -56,7 +54,7 @@ services:
       - 7050:7050
       - 7052:7052 # admin server
     networks:
-      - cc-tools-demo-net
+      - blockbank-cc-net
 
   peer0.org1.example.com:
     container_name: peer0.org1.example.com
@@ -67,7 +65,7 @@ services:
       # the following setting starts chaincode containers on the same
       # bridge network as the peers
       # https://docs.docker.com/compose/networking/
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=cc-tools-demo-net
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=blockbank-cc-net
       - FABRIC_LOGGING_SPEC=INFO
       #- FABRIC_LOGGING_SPEC=DEBUG
       - CORE_PEER_TLS_ENABLED=true
@@ -96,7 +94,7 @@ services:
       - 7051:7051
       - 7053:7053
     networks:
-      - cc-tools-demo-net
+      - blockbank-cc-net
 
   peer0.org2.example.com:
     container_name: peer0.org2.example.com
@@ -107,7 +105,7 @@ services:
       # the following setting starts chaincode containers on the same
       # bridge network as the peers
       # https://docs.docker.com/compose/networking/
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=cc-tools-demo-net
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=blockbank-cc-net
       - FABRIC_LOGGING_SPEC=INFO
       #- FABRIC_LOGGING_SPEC=DEBUG
       - CORE_PEER_TLS_ENABLED=true
@@ -136,7 +134,7 @@ services:
       - 8051:7051
       - 8053:7053
     networks:
-      - cc-tools-demo-net
+      - blockbank-cc-net
   
   peer0.org3.example.com:
     container_name: peer0.org3.example.com
@@ -147,7 +145,7 @@ services:
       # the following setting starts chaincode containers on the same
       # bridge network as the peers
       # https://docs.docker.com/compose/networking/
-      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=cc-tools-demo-net
+      - CORE_VM_DOCKER_HOSTCONFIG_NETWORKMODE=blockbank-cc-net
       - FABRIC_LOGGING_SPEC=INFO
       #- FABRIC_LOGGING_SPEC=DEBUG
       - CORE_PEER_TLS_ENABLED=true
@@ -176,7 +174,7 @@ services:
       - 9051:7051
       - 9053:7053
     networks:
-      - cc-tools-demo-net
+      - blockbank-cc-net
 
   cli:
     container_name: cli
@@ -199,4 +197,4 @@ services:
       - peer0.org2.example.com
       - peer0.org3.example.com
     networks:
-      - cc-tools-demo-net
+      - blockbank-cc-net

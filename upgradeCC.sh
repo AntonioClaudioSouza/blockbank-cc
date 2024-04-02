@@ -31,5 +31,5 @@ version=$1
 sequence=$2
 
 cd fabric
-./network.sh deployCC -ccn cc-tools-demo -ccp ../chaincode -ccl go -ccv $version -ccs $sequence -n $ORG_QNTY -cccg $CCCG_PATH -cci init
+./network.sh deployCC -ccn blockbank-cc -ccp ../chaincode -ccl go -ccv $version -ccs $sequence -n $ORG_QNTY -cccg $CCCG_PATH -cci init
 cd ..
