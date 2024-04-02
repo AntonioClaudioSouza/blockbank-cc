@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	cc "github.com/hyperledger-labs/cc-tools-demo/chaincode"
+	cc "github.com/hyperledger-labs/blockbank-cc/chaincode"
 	"github.com/hyperledger-labs/cc-tools/mock"
 )
 
